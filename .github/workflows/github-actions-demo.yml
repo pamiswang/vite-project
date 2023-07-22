@@ -12,7 +12,7 @@ on:
 
 # 修改授予 GITHUB_TOKEN 的預設權限，根據需要新增或刪除訪問權限，以便只授予所需的最低訪問權限
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
