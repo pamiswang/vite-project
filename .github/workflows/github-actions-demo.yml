@@ -1,0 +1,65 @@
+# workflow 名稱
+name: Deploy vite-project to vite-demo
+
+# 設定觸發條件
+on:
+  # 當推送 main 分支
+  push:
+    branches: ["main"]
+
+  # 為了方便線上測試允許手動執行 workflow
+  workflow_dispatch:
+
+# 修改授予 GITHUB_TOKEN 的預設權限，根據需要新增或刪除訪問權限，以便只授予所需的最低訪問權限
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 設定同時併發的處理
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+# 要執行的工作描述
+jobs:
+  deploy-vite-demo:
+    name: deploy to vite-demo
+    # 定義要運行作業的計算機類型。
+    runs-on: ubuntu-latest
+    # 定義各項工作的步驟順序
+    steps:
+      
+      # 簽出分支
+      - name: Checkout
+        uses: actions/checkout@v3
+      
+        # 下載與設定 Node.js
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: "npm"
+
+      # 透過 Node.js 安裝前端套件
+      - name: Install dependencies
+        run: npm install
+
+      # 建置專案
+      - name: Build
+        run: npm run build
+
+      # 將建置目錄放置到另一個存儲庫
+      - name: Deploy Blog To Other Oepository
+        uses: cpina/github-action-push-to-another-repository@main
+        env:
+          SSH_DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+        with:
+          source-directory: "dist/"
+          destination-github-username: "pamiswang"
+          destination-repository-name: "vite-demo"
+          user-name: "Pamis Wang"
+          user-email: "pamis1116@gmail.com"
+          target-branch: "main"
+          # 如果推送分支不存在就建立分支
+          create-target-branch-if-needed: true
